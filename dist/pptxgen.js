@@ -312,7 +312,7 @@ var PptxGenJS = function(){
 								strSharedStrings += '<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="'+ idx +'" uniqueCount="'+ idx +'">'
 								strSharedStrings += '<si><t xml:space="preserve"></t></si>';  // add blank in slot zero
 								values.forEach(function(label){
-									strSharedStrings += '<si><t>'+ label +'</t></si>';
+									strSharedStrings += '<si><t>'+ escapeXmlEntities(label) +'</t></si>';
 								});
 								strSharedStrings += '</sst>\n';
 								return strSharedStrings;
@@ -671,6 +671,18 @@ var PptxGenJS = function(){
 		// NOTE: Dont use short-circuit eval here as value c/b "0" (zero) etc.!
 		if ( typeof inStr === 'undefined' || inStr == null ) return "";
 		return inStr.toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\'/g,'&apos;');
+	}
+
+	function escapeXmlEntities(unsafe) {
+	    return unsafe.replace(/[<>&'"]/g, function (c) {
+	        switch (c) {
+	            case '<': return '&lt;';
+	            case '>': return '&gt;';
+	            case '&': return '&amp;';
+	            case '\'': return '&apos;';
+	            case '"': return '&quot;';
+	        }
+	    });
 	}
 
 	function createHyperlinkRels(inText, slideRels) {
@@ -1173,7 +1185,7 @@ var PptxGenJS = function(){
 							strXml += '    <c:f>Sheet1!'+ '$A$2:$A$'+ (obj.labels.length+1) +'</c:f>';
 							strXml += '    <c:strCache>';
 							strXml += '          <c:ptCount val="'+ obj.labels.length +'"/>';
-							obj.labels.forEach(function(label,idx){ strXml += '<c:pt idx="'+ idx +'"><c:v>'+ label +'</c:v></c:pt>'; });
+							obj.labels.forEach(function(label,idx){ strXml += '<c:pt idx="'+ idx +'"><c:v>'+ escapeXmlEntities(label) +'</c:v></c:pt>'; });
 							strXml += '    </c:strCache>';
 							strXml += '  </c:strRef>';
 					}
@@ -1428,7 +1440,7 @@ var PptxGenJS = function(){
 				strXml += '    <c:f>Sheet1!'+ '$B$1:$'+ getExcelColName(obj.labels.length) +'$1' +'</c:f>';
 				strXml += '    <c:strCache>';
 				strXml += '	     <c:ptCount val="'+ obj.labels.length +'"/>';
-				obj.labels.forEach(function(label,idx){ strXml += '<c:pt idx="'+ idx +'"><c:v>'+ label +'</c:v></c:pt>'; });
+				obj.labels.forEach(function(label,idx){ strXml += '<c:pt idx="'+ idx +'"><c:v>'+ escapeXmlEntities(label) +'</c:v></c:pt>'; });
 				strXml += '    </c:strCache>';
 				strXml += '  </c:strRef>';
 				strXml += '</c:cat>';
@@ -2057,7 +2069,7 @@ var PptxGenJS = function(){
 		// STEP 1: Start slide XML
 		var strSlideXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+CRLF;
 		strSlideXml += '<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">';
-		strSlideXml += '<p:cSld name="'+ inSlide.name +'">';
+		strSlideXml += '<p:cSld name="'+ escapeXmlEntities(inSlide.name) +'">';
 
 		// STEP 2: Add background color or background image (if any)
 		// A: Background color
